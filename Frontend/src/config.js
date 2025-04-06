@@ -1,5 +1,5 @@
 export const SERVER_URL =
-  "https://9ja-market-backend-production.up.railway.app/api/v1/";
+  "https://9ja-market-backend-production-5890.up.railway.app/api/v1/";
 // export const SERVER_URL = "http://localhost:3100/api/v1/";
 export const GOOGLE_URL = `${SERVER_URL}auth/customer/google`;
 // 3 Days for access token
