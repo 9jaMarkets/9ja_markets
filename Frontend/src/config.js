@@ -8,7 +8,7 @@ export const ACCESS_TOKEN_DURATION = 3;
 export const REFRESH_TOKEN_DURATION = 14;
 
 // ? This is what the server currently supports
-export const MERCHANT_CATEGORIES = [gi tpull
+export const MERCHANT_CATEGORIES = [
   "GROCERY",
   "PHARMACY",
   "RESTAURANT",
