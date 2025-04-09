@@ -23,68 +23,74 @@ export function UserAvatar({ showName, auth }) {
   const options = (
     <div>
       <ul className="space-y-2 mx-2 px-2 min-w-[10ch]">
-        {/* Admin: admin and signout */}
-        {userProfile && userProfile.role === "ADMIN" ? (
+        {userProfile && (
           <>
-            <li
-              className="flex items-center gap-1.5 hover:font-semibold hover:text-Primary transition-colors cursor-pointer select-none"
-              onClick={() => {
-                navigate("/admin");
-              }}>
-              <ShieldCheck className="w-4 h-4 text-Primary" /> Admin
-            </li>
-            <li
-              className="hover:font-semibold hover:text-red-500 transition-colors cursor-pointer select-none"
-              onClick={() => {
-                setLogoutOpen(true);
-              }}
-            >
-              Sign out
-            </li>
+            {/* Admin */}
+            {userProfile.role === "ADMIN" && (
+              <>
+                <li
+                  className="flex items-center gap-1.5 hover:font-semibold hover:text-Primary transition-colors cursor-pointer select-none"
+                  onClick={() => {
+                    navigate("/admin");
+                  }}>
+                  <ShieldCheck className="w-4 h-4 text-Primary" /> Admin
+                </li>
+                <li
+                  className="hover:font-semibold hover:text-red-500 transition-colors cursor-pointer select-none"
+                  onClick={() => {
+                    setLogoutOpen(true);
+                  }}
+                >
+                  Sign out
+                </li>
+              </>
+            )}
+
+            {/* Merchant */}
+            {userProfile.role !== "ADMIN" && userProfile.userType === "merchant" && (
+              <>
+                <li
+                  className="hover:font-semibold hover:text-Primary transition-colors cursor-pointer select-none"
+                  onClick={() => {
+                    navigate("/dashboard");
+                  }}
+                >
+                  Dashboard
+                </li>
+                <li
+                  className="hover:font-semibold hover:text-red-500 transition-colors cursor-pointer select-none"
+                  onClick={() => {
+                    setLogoutOpen(true);
+                  }}
+                >
+                  Sign out
+                </li>
+              </>
+            )}
+
+            {/* Customer */}
+            {userProfile.role !== "ADMIN" && userProfile.userType === "customer" && (
+              <>
+                <li
+                  className="hover:font-semibold hover:text-Primary transition-colors cursor-pointer select-none"
+                  onClick={() => {
+                    navigate("/dashboard/bookmark");
+                  }}
+                >
+                  Bookmark
+                </li>
+                <li
+                  className="hover:font-semibold hover:text-red-500 transition-colors cursor-pointer select-none"
+                  onClick={() => {
+                    setLogoutOpen(true);
+                  }}
+                >
+                  Sign out
+                </li>
+              </>
+            )}
           </>
-        ) : null}
-        {/*Merchant: Dashboard and signout */}  
-        {userProfile && userProfile.userType === "merchant" ? (
-          <>
-            <li
-              className="hover:font-semibold hover:text-Primary transition-colors cursor-pointer select-none"
-              onClick={() => {
-                navigate("/dashboard");
-              }}
-            >
-              Dashboard
-            </li>
-            <li
-              className="hover:font-semibold hover:text-red-500 transition-colors cursor-pointer select-none"
-              onClick={() => {
-                setLogoutOpen(true);
-              }}
-            >
-              Sign out
-            </li>
-          </>
-        ) : null}
-        {/*Customer: Bookmark and signout */}  
-        {userProfile && userProfile.userType === "customer" ? (
-          <>
-            <li
-              className="hover:font-semibold hover:text-Primary transition-colors cursor-pointer select-none"
-              onClick={() => {
-                navigate("/dashboard/bookmark");
-              }}
-            >
-              Bookmark
-            </li>
-            <li
-              className="hover:font-semibold hover:text-red-500 transition-colors cursor-pointer select-none"
-              onClick={() => {
-                setLogoutOpen(true);
-              }}
-            >
-              Sign out
-            </li>
-          </>
-        ) : null}
+        )}
       </ul>
     </div>
   );
