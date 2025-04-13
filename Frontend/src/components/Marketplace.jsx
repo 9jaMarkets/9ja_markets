@@ -2,45 +2,17 @@ import { useState, useContext, useEffect, useMemo, useRef } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { useErrorLogger } from "@/hooks";
 import { getMarketProducts } from "@/lib/api/marketApi";
-import {
-  MARKETS_DATA_CONTEXT,
-  MESSAGE_API_CONTEXT,
-  USER_PROFILE_CONTEXT,
-  BOOKMARK_CONTEXT,
-  MALLS_DATA_CONTEXT,
-} from "@/contexts";
+import { MARKETS_DATA_CONTEXT, MESSAGE_API_CONTEXT, USER_PROFILE_CONTEXT, BOOKMARK_CONTEXT, MALLS_DATA_CONTEXT } from "@/contexts";
 import LoadingPage from "@/componets-utils/LoadingPage";
 import NotFoundPage from "@/components/NotFoundPage";
-import {
-  Search,
-  SearchX,
-  HelpCircle,
-  MapPin,
-  Info,
-  Building2,
-  MapPinned,
-  Star,
-  Crown,
-  Award,
-} from "lucide-react";
+import { Search, SearchX, HelpCircle, MapPin, Info, Building2, MapPinned, Star, Crown, Award } from "lucide-react";
 import { PRODUCT_CATEGORIES } from "@/config";
-import {
-  addToBookmarks,
-  removeFromBookmarks,
-  getBookmarks,
-} from "@/lib/api/bookmarkApi";
+import { addToBookmarks, removeFromBookmarks, getBookmarks } from "@/lib/api/bookmarkApi";
 import { replaceUnderscoresWithSpaces } from "@/lib/util";
-import {
-  getProductsWithAdsStatus,
-  sortProductsByAdPriority,
-} from "@/lib/api/adApi";
-import {
-  useTrackAdView,
-  useTrackProductClick,
-  useTrackAdClick,
-} from "@/hooks/useTracking";
-import { trackAdClick } from "@/lib/api/trackingApi";
+import { getProductsWithAdsStatus, sortProductsByAdPriority } from "@/lib/api/adApi";
+import { useTrackProductClick, useTrackAdClick } from "@/hooks/useTracking";
 import MarketProductCard from "./MarketProductCard";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Function to get ad level label and style
 const getAdBadge = (level) => {
@@ -68,6 +40,24 @@ const getAdBadge = (level) => {
   }
 };
 
+const ProductCardSkeleton = () => (
+  <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+    <div className="relative">
+      <Skeleton className="w-full aspect-square" />
+      {/* Ad badge skeleton */}
+      <Skeleton className="absolute top-2 right-2 h-6 w-20 rounded-full" />
+    </div>
+    <div className="p-3 space-y-2">
+      <Skeleton className="h-4 w-3/4" />
+      <Skeleton className="h-6 w-1/2" />
+      <div className="flex justify-between items-center pt-2">
+        <Skeleton className="h-8 w-8 rounded-full" />
+        <Skeleton className="h-4 w-1/3" />
+      </div>
+    </div>
+  </div>
+);
+
 const Marketplace = () => {
   const { id } = useParams();
   const location = useLocation();
@@ -92,21 +82,32 @@ const Marketplace = () => {
   const handleAdClick = useTrackAdClick();
   const adViewRefs = useRef({});
   const errorLogger = useErrorLogger();
+  const [isLoading, setIsLoading] = useState(true);
+
   const fetchProducts = async () => {
-    const products = await getMarketProducts(id, errorLogger);
-    if (!products) return;
+    setIsLoading(true);
+    try {
+      const products = await getMarketProducts(id, errorLogger);
+      if (!products) {
+        setIsLoading(false);
+        return;
+      }
 
-    // Enhance products with ad status
-    const productsWithAdStatus = await getProductsWithAdsStatus(
-      products,
-      { [isMall ? 'mall' : 'market']: id },
-      errorLogger
-    );
+      // Enhance products with ad status
+      const productsWithAdStatus = await getProductsWithAdsStatus(
+        products,
+        { [isMall ? 'mall' : 'market']: id },
+        errorLogger
+      );
 
-    // Sort products so ads appear first
-    const sortedProducts = sortProductsByAdPriority(productsWithAdStatus);
-
-    setProducts(sortedProducts);
+      // Sort products so ads appear first
+      const sortedProducts = sortProductsByAdPriority(productsWithAdStatus);
+      setProducts(sortedProducts);
+    } catch (error) {
+      errorLogger(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const MARKET_CATEGORIES = ["All", ...PRODUCT_CATEGORIES];
@@ -362,7 +363,13 @@ const Marketplace = () => {
 
           {/* Products Grid */}
           <div className="flex-1">
-            {filteredProducts.length > 0 ? (
+            {isLoading ? (
+              <div className="gap-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+                {[...Array(8)].map((_, index) => (
+                  <ProductCardSkeleton key={`skeleton-${index}`} />
+                ))}
+              </div>
+            ) : filteredProducts.length > 0 ? (
               <div className="gap-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
                 {filteredProducts.map((product) => (
                   <MarketProductCard

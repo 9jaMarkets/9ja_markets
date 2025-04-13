@@ -18,6 +18,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Navigation } from "swiper/modules";
 import { Search } from "lucide-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Skeleton } from "./ui/skeleton";
 
 // Import Swiper styles
 import "swiper/css";
@@ -126,6 +127,40 @@ PRODUCT_CATEGORIES.forEach((category) => {
   categories[formattedName] = imageMapping[category];
 });
 
+const MarketSkeleton = () => (
+  <div className="gap-4 md:gap-6 grid grid-rows-3 overflow-visible">
+    {[1, 2, 3].map((index) => (
+      <div key={index} className="bg-white shadow-sm rounded-xl overflow-hidden">
+        <div className="relative">
+          <Skeleton className="w-full aspect-video" />
+          <Skeleton className="top-2 right-2 absolute w-16 h-5 rounded-full" />
+        </div>
+        <div className="p-2 space-y-2">
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-3 w-full" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+const MallSkeleton = () => (
+  <div className="gap-4 md:gap-6 grid grid-rows-2">
+    {[1, 2].map((index) => (
+      <div key={index} className="bg-white shadow-sm rounded-xl overflow-hidden">
+        <div className="relative">
+          <Skeleton className="w-full aspect-video" />
+          <Skeleton className="top-2 right-2 absolute w-16 h-5 rounded-full" />
+        </div>
+        <div className="p-2 space-y-2">
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-3 w-full" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
 function ExploreSection() {
   const [searchQuery, setSearchQuery] = useState("");
   const [columnNumber, setCardNumber] = useState(4); // Default to desktop (4 columns)
@@ -134,6 +169,8 @@ function ExploreSection() {
   const { mallsData } = useContext(MALLS_DATA_CONTEXT);
   const [prioritizedMarkets, setPrioritizedMarkets] = useState([]);
   const [prioritizedMalls, setPrioritizedMalls] = useState([]);
+  const [isMarketsLoading, setIsMarketsLoading] = useState(true);
+  const [isMallsLoading, setIsMallsLoading] = useState(true);
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value.toLowerCase());
@@ -168,10 +205,7 @@ function ExploreSection() {
   // Prioritize markets and malls based on featured lists
   useEffect(() => {
     if (marketsData.length > 0) {
-      // Create a copy of the markets data to avoid mutating the original
       const marketsCopy = [...marketsData];
-
-      // Sort markets based on priority list
       const sorted = marketsCopy.sort((a, b) => {
         const indexA = FEATURED_MARKET_NAMES.findIndex(
           (name) => a.name.toLowerCase() === name.toLowerCase()
@@ -180,29 +214,18 @@ function ExploreSection() {
           (name) => b.name.toLowerCase() === name.toLowerCase()
         );
 
-        // If both are in the featured list, sort by their position in the list
-        if (indexA !== -1 && indexB !== -1) {
-          return indexA - indexB;
-        }
-
-        // If only a is in the featured list, it comes first
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
         if (indexA !== -1) return -1;
-
-        // If only b is in the featured list, it comes first
         if (indexB !== -1) return 1;
-
-        // If neither is in the featured list, maintain original order
         return 0;
       });
 
       setPrioritizedMarkets(sorted);
+      setIsMarketsLoading(false);
     }
 
     if (mallsData.length > 0) {
-      // Create a copy of the malls data
       const mallsCopy = [...mallsData];
-
-      // Sort malls based on priority list
       const sorted = mallsCopy.sort((a, b) => {
         const indexA = FEATURED_MALLS_NAMES.findIndex(
           (name) => a.name.toLowerCase() === name.toLowerCase()
@@ -211,22 +234,14 @@ function ExploreSection() {
           (name) => b.name.toLowerCase() === name.toLowerCase()
         );
 
-        // If both are in the featured list, sort by their position in the list
-        if (indexA !== -1 && indexB !== -1) {
-          return indexA - indexB;
-        }
-
-        // If only a is in the featured list, it comes first
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
         if (indexA !== -1) return -1;
-
-        // If only b is in the featured list, it comes first
         if (indexB !== -1) return 1;
-
-        // If neither is in the featured list, maintain original order
         return 0;
       });
 
       setPrioritizedMalls(sorted);
+      setIsMallsLoading(false);
     }
   }, [marketsData, mallsData]);
 
@@ -443,48 +458,55 @@ function ExploreSection() {
               modules={[Pagination, Navigation]}
               className="pb-10 relative"
             >
-              {/* First Slide - Grid View */}
-              {nestedMarkets.map((markets, index) => (
-                <SwiperSlide key={`market-slide-${index}`}>
-                  <div className="gap-4 md:gap-6 grid grid-rows-3 overflow-visible">
-                    {markets.map((market) => (
-                      <div
-                        key={market.id || market.name}
-                        className="group relative bg-white shadow-sm hover:shadow-md rounded-xl overflow-hidden transition-all duration-200"
-                      >
-                        <Link to={`/markets/${market.id}`}>
-                          <div className="relative">
-                            <img
-                              src={market.displayImage}
-                              alt={market.name}
-                              className="w-full object-cover aspect-video"
-                              loading="lazy"
-                            />
-                            {/* State Badge - Absolute positioned */}
-                            <span className="top-2 right-2 absolute bg-white/90 shadow-sm px-2 py-0.5 rounded-full font-medium text-gray-700 text-xs">
-                              {market.state}
-                            </span>
-                            {/* Description Overlay on Hover */}
-                            <div className="absolute inset-0 flex justify-center items-center bg-black/70 opacity-0 group-hover:opacity-100 p-3 transition-opacity duration-200">
-                              <p className="text-white text-xs text-center line-clamp-2">
-                                {market.description || "No description available"}
+              {isMarketsLoading ? (
+                [1, 2, 3, 4].map((index) => (
+                  <SwiperSlide key={`market-skeleton-${index}`}>
+                    <MarketSkeleton />
+                  </SwiperSlide>
+                ))
+              ) : (
+                nestedMarkets.map((markets, index) => (
+                  <SwiperSlide key={`market-slide-${index}`}>
+                    <div className="gap-4 md:gap-6 grid grid-rows-3 overflow-visible">
+                      {markets.map((market) => (
+                        <div
+                          key={market.id || market.name}
+                          className="group relative bg-white shadow-sm hover:shadow-md rounded-xl overflow-hidden transition-all duration-200"
+                        >
+                          <Link to={`/markets/${market.id}`}>
+                            <div className="relative">
+                              <img
+                                src={market.displayImage}
+                                alt={market.name}
+                                className="w-full object-cover aspect-video"
+                                loading="lazy"
+                              />
+                              {/* State Badge - Absolute positioned */}
+                              <span className="top-2 right-2 absolute bg-white/90 shadow-sm px-2 py-0.5 rounded-full font-medium text-gray-700 text-xs">
+                                {market.state}
+                              </span>
+                              {/* Description Overlay on Hover */}
+                              <div className="absolute inset-0 flex justify-center items-center bg-black/70 opacity-0 group-hover:opacity-100 p-3 transition-opacity duration-200">
+                                <p className="text-white text-xs text-center line-clamp-2">
+                                  {market.description || "No description available"}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="p-2">
+                              <h3 className="font-medium text-gray-800 text-xs md:text-sm">
+                                {market.name}
+                              </h3>
+                              <p className="text-gray-600 text-xs truncate">
+                                {market.address}
                               </p>
                             </div>
-                          </div>
-                          <div className="p-2">
-                            <h3 className="font-medium text-gray-800 text-xs md:text-sm">
-                              {market.name}
-                            </h3>
-                            <p className="text-gray-600 text-xs truncate">
-                              {market.address}
-                            </p>
-                          </div>
-                        </Link>
-                      </div>
-                    ))}
-                  </div>
-                </SwiperSlide>
-              ))}
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  </SwiperSlide>
+                ))
+              )}
               {/* Navigation Arrows */}
               <div className="swiper-button-prev-markets absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-orange hover:bg-orange/90 rounded-full w-8 h-8 flex items-center justify-center shadow-md cursor-pointer transition-colors">
                 <ChevronLeft className="w-5 h-5 text-white" />
@@ -529,48 +551,55 @@ function ExploreSection() {
               modules={[Pagination, Navigation]}
               className="pb-10 relative"
             >
-              {/* Using the same nested layout as markets */}
-              {nestedMalls.map((malls, index) => (
-                <SwiperSlide key={`mall-slide-${index}`}>
-                  <div className="gap-4 md:gap-6 grid grid-rows-2">
-                    {malls.map((mall) => (
-                      <div
-                        key={mall.id || mall.name}
-                        className="group relative bg-white shadow-sm hover:shadow-md rounded-xl overflow-hidden transition-all duration-200"
-                      >
-                        <Link to={`/malls/${mall.id}`}>
-                          <div className="relative">
-                            <img
-                              src={mall.displayImage}
-                              alt={mall.name}
-                              className="w-full object-cover aspect-video"
-                              loading="lazy"
-                            />
-                            {/* State Badge */}
-                            <span className="top-2 right-2 absolute bg-white/90 shadow-sm px-2 py-0.5 rounded-full font-medium text-gray-700 text-xs">
-                              {mall.state}
-                            </span>
-                            {/* Description Overlay on Hover */}
-                            <div className="absolute inset-0 flex justify-center items-center bg-black/70 opacity-0 group-hover:opacity-100 p-3 transition-opacity duration-200">
-                              <p className="text-white text-xs text-center line-clamp-2">
-                                {mall.description || "No description available"}
+              {isMallsLoading ? (
+                [1, 2, 3, 4].map((index) => (
+                  <SwiperSlide key={`mall-skeleton-${index}`}>
+                    <MallSkeleton />
+                  </SwiperSlide>
+                ))
+              ) : (
+                nestedMalls.map((malls, index) => (
+                  <SwiperSlide key={`mall-slide-${index}`}>
+                    <div className="gap-4 md:gap-6 grid grid-rows-2">
+                      {malls.map((mall) => (
+                        <div
+                          key={mall.id || mall.name}
+                          className="group relative bg-white shadow-sm hover:shadow-md rounded-xl overflow-hidden transition-all duration-200"
+                        >
+                          <Link to={`/malls/${mall.id}`}>
+                            <div className="relative">
+                              <img
+                                src={mall.displayImage}
+                                alt={mall.name}
+                                className="w-full object-cover aspect-video"
+                                loading="lazy"
+                              />
+                              {/* State Badge */}
+                              <span className="top-2 right-2 absolute bg-white/90 shadow-sm px-2 py-0.5 rounded-full font-medium text-gray-700 text-xs">
+                                {mall.state}
+                              </span>
+                              {/* Description Overlay on Hover */}
+                              <div className="absolute inset-0 flex justify-center items-center bg-black/70 opacity-0 group-hover:opacity-100 p-3 transition-opacity duration-200">
+                                <p className="text-white text-xs text-center line-clamp-2">
+                                  {mall.description || "No description available"}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="p-2">
+                              <h3 className="font-medium text-gray-800 text-xs md:text-sm">
+                                {mall.name}
+                              </h3>
+                              <p className="text-gray-600 text-xs truncate">
+                                {mall.address}
                               </p>
                             </div>
-                          </div>
-                          <div className="p-2">
-                            <h3 className="font-medium text-gray-800 text-xs md:text-sm">
-                              {mall.name}
-                            </h3>
-                            <p className="text-gray-600 text-xs truncate">
-                              {mall.address}
-                            </p>
-                          </div>
-                        </Link>
-                      </div>
-                    ))}
-                  </div>
-                </SwiperSlide>
-              ))}
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  </SwiperSlide>
+                ))
+              )}
               {/* Navigation Arrows */}
               <div className="swiper-button-prev-malls absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-orange hover:bg-orange/90 rounded-full w-8 h-8 flex items-center justify-center shadow-md cursor-pointer transition-colors">
                 <ChevronLeft className="w-5 h-5 text-white" />

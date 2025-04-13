@@ -194,7 +194,7 @@ const ProductDetails = () => {
 
         <div className="bg-white shadow-md p-6 rounded-lg">
           {/* Ad Status Banner (if product is advertised) */}
-          {/* {adStatusInfo && (
+          {adStatusInfo && (
             <div
               className={`mb-6 p-4 rounded-lg border ${adStatusInfo.borderColor} ${adStatusInfo.bgColor}`}
             >
@@ -222,7 +222,7 @@ const ProductDetails = () => {
                 </div>
               </div>
             </div>
-          )} */}
+          )}
 
           <div className="gap-8 grid grid-cols-1 lg:grid-cols-2">
             {/* Image Gallery */}
@@ -330,12 +330,18 @@ const ProductDetails = () => {
                 <div className="bg-gradient-to-br from-Primary/5 to-Primary/10 p-3 sm:p-4 lg:p-6 border border-Primary/20 rounded-xl">
                   <div className="flex sm:flex-row flex-col gap-3 sm:gap-4 lg:gap-6">
                     <div className="flex sm:flex-col items-center sm:items-start sm:w-1/3 lg:w-1/2">
-                      <div className="border-2 border-Primary/20 rounded-lg w-16 sm:w-20 lg:w-24 h-16 sm:h-20 lg:h-24 overflow-hidden">
-                        <img
-                          src={product.merchant.logo || "/merchant-image.png"}
-                          alt={product.merchant.brandName}
-                          className="w-full h-full object-cover"
-                        />
+                      <div className="border-2 border-Primary/20 rounded-lg w-16 sm:w-20 lg:w-24 h-16 sm:h-20 lg:h-24 overflow-hidden bg-gradient-to-br from-Primary/5 to-Primary/20 flex items-center justify-center">
+                        {product.merchant.logo ? (
+                          <img
+                            src={product.merchant.logo}
+                            alt={product.merchant.brandName}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="font-bold text-2xl sm:text-3xl lg:text-4xl text-Primary">
+                            {product.merchant.brandName[0].toUpperCase()}
+                          </span>
+                        )}
                       </div>
                       <div className="sm:mt-5 ml-4 sm:ml-0">
                         <h3 className="font-semibold text-gray-900 text-base sm:text-lg">
@@ -476,20 +482,24 @@ const ProductDetails = () => {
                 </div>
 
                 <div className="flex flex-col gap-3 bg-gray-50 p-4 rounded-lg">
-                  <p className="flex items-center gap-3 text-gray-600">
-                    <PackageSearch className="size-5 text-Primary" />
-                    <span className="font-semibold">Category</span>
-                    <span className="bg-white px-3 py-1 rounded-lg font-medium text-gray-900">
+                  <div className="flex flex-wrap items-center gap-3 text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <PackageSearch className="size-5 text-Primary flex-shrink-0" />
+                      <span className="font-semibold">Category</span>
+                    </div>
+                    <span className="bg-white px-3 py-1 rounded-lg font-medium text-gray-900 break-all">
                       {product.category}
                     </span>
-                  </p>
-                  <p className="flex items-center gap-3 text-gray-600">
-                    <ShoppingBasket className="size-5 text-Primary" />
-                    <span className="font-semibold">Stock</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3 text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <ShoppingBasket className="size-5 text-Primary flex-shrink-0" />
+                      <span className="font-semibold">Stock</span>
+                    </div>
                     <span className="bg-white px-3 py-1 rounded-lg font-medium text-gray-900">
                       {product.stock}
                     </span>
-                  </p>
+                  </div>
                 </div>
               </div>
 
