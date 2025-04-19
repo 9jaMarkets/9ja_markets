@@ -14,6 +14,7 @@ import {
   Search,
 } from "lucide-react";
 import { MARKETS_DATA_CONTEXT } from "@/contexts";
+import SkeletonCard from "./shared/SkeletonCard";
 
 // MarketCard component with PropTypes
 const MarketCard = ({ market }) => {
@@ -68,6 +69,8 @@ MarketCard.propTypes = {
     displayImage: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     address: PropTypes.string.isRequired,
+    state: PropTypes.string.isRequired,
+    description: PropTypes.string,
   }).isRequired,
 };
 
@@ -76,6 +79,7 @@ const MarketPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { marketsData } = useContext(MARKETS_DATA_CONTEXT);
 
   // Set up debounced search term
@@ -94,11 +98,20 @@ const MarketPage = () => {
     };
   }, [searchTerm, debouncedSearch]);
 
+  // Simulate loading state when data or state changes
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000); // Show skeleton for at least 1 second
+
+    return () => clearTimeout(timer);
+  }, [selectedState, marketsData]);
+
   const filteredMarkets = useMemo(() => {
     if (!selectedState) return marketsData;
 
     // First filter by state
-
     const stateFiltered = marketsData.filter((market) => {
       if (!market.state) return false;
       return market.state.toLowerCase().includes(selectedState.toLowerCase());
@@ -315,7 +328,12 @@ const MarketPage = () => {
             </h2>
 
             <div className="gap-3 md:gap-6 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filteredMarkets.length > 0 ? (
+              {isLoading ? (
+                // Show skeleton cards while loading
+                Array.from({ length: 8 }).map((_, index) => (
+                  <SkeletonCard key={index} />
+                ))
+              ) : filteredMarkets.length > 0 ? (
                 filteredMarkets.map((market, index) => (
                   <MarketCard key={index} market={market} />
                 ))

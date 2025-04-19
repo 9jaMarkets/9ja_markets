@@ -13,12 +13,14 @@ import {
 } from "lucide-react";
 import { STATES } from "../config";
 import { MALLS_DATA_CONTEXT } from "@/contexts";
+import SkeletonCard from "./shared/SkeletonCard";
 
 const MallPage = () => {
   const [selectedState, setSelectedState] = useState(STATES[0]);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { mallsData } = useContext(MALLS_DATA_CONTEXT);
 
   // Set up debounced search term
@@ -36,6 +38,16 @@ const MallPage = () => {
       debouncedSearch.cancel();
     };
   }, [searchTerm, debouncedSearch]);
+
+  // Simulate loading state when data or state changes
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000); // Show skeleton for at least 1 second
+
+    return () => clearTimeout(timer);
+  }, [selectedState, mallsData]);
 
   const filteredMalls = useMemo(() => {
     if (!selectedState) return mallsData;
@@ -256,7 +268,12 @@ const MallPage = () => {
             </h2>
 
             <div className="gap-3 md:gap-6 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filteredMalls.length > 0 ? (
+              {isLoading ? (
+                // Show skeleton cards while loading
+                Array.from({ length: 8 }).map((_, index) => (
+                  <SkeletonCard key={index} />
+                ))
+              ) : filteredMalls.length > 0 ? (
                 filteredMalls.map((mall, index) => (
                   <Link
                     to={`/malls/${mall.id}`}
