@@ -36,7 +36,7 @@ const Header2 = () => {
 
   return (
     <>
-      <header className="top-0 z-[15] fixed bg-Primary shadow px-4 w-full text-white">
+      <header className="top-0 z-20 fixed bg-Primary shadow px-4 w-full text-white">
         <div className="flex justify-between items-center mx-auto p-2 h-14 container">
           {/* Logo and Nav */}
           <div className="flex items-center">
@@ -128,7 +128,7 @@ const Header2 = () => {
 
       {/* Mobile Side Panel */}
       <div
-        className={`z-[60] fixed inset-0 transform transition-transform duration-300 ${
+        className={`z-[1001] fixed inset-0 transform transition-transform duration-300 ${
           isMenuOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >

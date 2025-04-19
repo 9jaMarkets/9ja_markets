@@ -20,7 +20,7 @@ const MallPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [dataLoaded, setDataLoaded] = useState(false);
   const { mallsData } = useContext(MALLS_DATA_CONTEXT);
 
   // Set up debounced search term
@@ -39,15 +39,25 @@ const MallPage = () => {
     };
   }, [searchTerm, debouncedSearch]);
 
-  // Simulate loading state when data or state changes
+  // Handle data loading state
   useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000); // Show skeleton for at least 1 second
+    if (mallsData && mallsData.length > 0) {
+      // Only mark as loaded if we actually have data
+      setDataLoaded(true);
+    }
+  }, [mallsData]);
 
+  // Reset loading state when state changes
+  useEffect(() => {
+    setDataLoaded(false);
+    // Add a small delay to prevent flickering if data loads very quickly
+    const timer = setTimeout(() => {
+      if (mallsData && mallsData.length > 0) {
+        setDataLoaded(true);
+      }
+    }, 100);
     return () => clearTimeout(timer);
-  }, [selectedState, mallsData]);
+  }, [selectedState]);
 
   const filteredMalls = useMemo(() => {
     if (!selectedState) return mallsData;
@@ -187,14 +197,14 @@ const MallPage = () => {
 
       {/* Mobile Filter Drawer */}
       <div
-        className={`fixed inset-0 bg-black/50 z-[40] transition-opacity duration-300 md:hidden ${
+        className={`fixed inset-0 bg-black/50 z-[21] transition-opacity duration-300 md:hidden ${
           showFilters ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={() => setShowFilters(false)}
       />
 
       <div
-        className={`fixed top-0 right-0 h-full w-[280px] bg-white z-[41] transform transition-transform duration-300 ease-in-out md:hidden ${
+        className={`fixed top-0 right-0 h-full w-[280px] bg-white z-[22] transform transition-transform duration-300 ease-in-out md:hidden ${
           showFilters ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -268,7 +278,7 @@ const MallPage = () => {
             </h2>
 
             <div className="gap-3 md:gap-6 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {isLoading ? (
+              {!dataLoaded ? (
                 // Show skeleton cards while loading
                 Array.from({ length: 8 }).map((_, index) => (
                   <SkeletonCard key={index} />
@@ -277,7 +287,7 @@ const MallPage = () => {
                 filteredMalls.map((mall, index) => (
                   <Link
                     to={`/malls/${mall.id}`}
-                    key={index}
+                    key={mall.id || index}
                     className="group relative bg-white shadow-sm hover:shadow-md rounded-xl overflow-hidden transition-all duration-300"
                   >
                     <div className="relative">
